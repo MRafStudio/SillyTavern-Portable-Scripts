@@ -63,7 +63,7 @@ SillyTavern-Portable/
 | Модель | Файл | Размер | Мин. VRAM |
 |---|---|---|---|
 | Qwen 3.6-35B-A3B | `Qwen3.6-35B-A3B-UD-IQ4_NL.gguf` | 18.0 ГБ | 24 GB |
-| Gemma 4-26B-A4B | `gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf` | 17.0 ГБ | 20 GB |
+| Gemma 4-26B-A4B | `gemma-4-26B-A4B-it-UD-IQ4_NL.gguf` | 13.6 ГБ | 20 GB |
 
 ## ▶️ Запуск
 

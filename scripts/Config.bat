@@ -200,7 +200,7 @@ echo   %ESC%[1;36m                         Выбор LLM модели          
 echo   %ESC%[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%ESC%[0m
 echo.
 echo     %ESC%[1;37m[1]%ESC%[0m %ESC%[1;35mQwen 3.6-35B-A3B UD-IQ4_NL%ESC%[0m %ESC%[2m^(18.0 ГБ, мин. 24 GB VRAM, мультимодальная^)%ESC%[0m
-echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4-26B-A4B UD-Q4_K_XL%ESC%[0m %ESC%[2m^(17.0 ГБ, мин. 20 GB VRAM, мультимодальная^)%ESC%[0m
+echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4-26B-A4B UD-IQ4_NL%ESC%[0m %ESC%[2m^(13.6 ГБ, мин. 20 GB VRAM, мультимодальная^)%ESC%[0m
 echo     %ESC%[1;37m[3]%ESC%[0m %ESC%[1;37mОчистить выбор модели%ESC%[0m
 echo.
 echo     %ESC%[1;37m[0]%ESC%[0m %ESC%[1mНазад%ESC%[0m
@@ -219,9 +219,9 @@ if "%model_choice%"=="1" (
     goto save_settings
 )
 if "%model_choice%"=="2" (
-    set "MODEL=gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf"
+    set "MODEL=gemma-4-26B-A4B-it-UD-IQ4_NL.gguf"
     set "MMPROJ=mmproj-BF16.gguf"
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Gemma 4-26B-A4B ^(UD-Q4_K_XL^)%ESC%[0m
+    echo   %ESC%[1;32m  ✔   Выбрана модель: Gemma 4-26B-A4B ^(UD-IQ4_NL^)%ESC%[0m
     echo   %ESC%[2m      Проектор: mmproj-BF16.gguf ^(будет загружен автоматически^)%ESC%[0m
     goto save_settings
 )

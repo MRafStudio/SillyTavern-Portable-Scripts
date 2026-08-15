@@ -28,7 +28,7 @@ MODELS = [
     (1, "Qwen 3.6-35B-A3B UD-IQ4_NL", "Qwen3.6-35B-A3B-UD-IQ4_NL.gguf", "18.0 GB", 24,
      "mmproj-F16.gguf", "unsloth/Qwen3.6-35B-A3B-GGUF", 262144, "q4_0", "65536"),
     # 20+ GB VRAM (качество длинного контекста: q8_0 KV)
-    (2, "Gemma 4-26B-A4B UD-Q4_K_XL", "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf", "17.0 GB", 20,
+    (2, "Gemma 4-26B-A4B UD-IQ4_NL", "gemma-4-26B-A4B-it-UD-IQ4_NL.gguf", "13.6 GB", 20,
      "mmproj-BF16.gguf", "unsloth/gemma-4-26B-A4B-it-GGUF", 262144, "q8_0", "65536"),
 ]
 

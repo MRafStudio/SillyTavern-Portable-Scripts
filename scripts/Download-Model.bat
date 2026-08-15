@@ -60,7 +60,7 @@ echo.
 echo   %ESC%[1;33mДоступные модели:%ESC%[0m
 echo.
 echo     %ESC%[1;37m[1]%ESC%[0m %ESC%[1;35mQwen 3.6-35B-A3B UD-IQ4_NL%ESC%[0m %ESC%[2m(18.0 ГБ, мин. 24 GB VRAM, мультимодальная)%ESC%[0m
-echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4-26B-A4B UD-Q4_K_XL%ESC%[0m %ESC%[2m(17.0 ГБ, мин. 20 GB VRAM, мультимодальная)%ESC%[0m
+echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4-26B-A4B UD-IQ4_NL%ESC%[0m %ESC%[2m(13.6 ГБ, мин. 20 GB VRAM, мультимодальная)%ESC%[0m
 echo.
 echo     %ESC%[1;37m[8]%ESC%[0m %ESC%[1;37mВвести ID модели и имя файла вручную%ESC%[0m
 echo.
@@ -78,7 +78,7 @@ set "PROJECTOR="
 
 if "!choice!"=="" goto menu
 if "!choice!"=="1" set "MODEL_ID=unsloth/Qwen3.6-35B-A3B-GGUF" & set "FILENAME=Qwen3.6-35B-A3B-UD-IQ4_NL.gguf" & set "MODEL_SIZE=18.0 ГБ" & set "PROJECTOR=mmproj-F16.gguf" & goto do_download_qwen
-if "!choice!"=="2" set "MODEL_ID=unsloth/gemma-4-26B-A4B-it-GGUF" & set "FILENAME=gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf" & set "MODEL_SIZE=17.0 ГБ" & set "PROJECTOR=mmproj-BF16.gguf" & goto do_download_qwen
+if "!choice!"=="2" set "MODEL_ID=unsloth/gemma-4-26B-A4B-it-GGUF" & set "FILENAME=gemma-4-26B-A4B-it-UD-IQ4_NL.gguf" & set "MODEL_SIZE=13.6 ГБ" & set "PROJECTOR=mmproj-BF16.gguf" & goto do_download_qwen
 if "!choice!"=="8" goto manual_download
 if "!choice!"=="9" goto list_models
 if "!choice!"=="0" goto exit
