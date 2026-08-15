@@ -43,15 +43,15 @@ if exist "SillyTavern\package.json" (
     set "ST_INSTALLED=0"
 )
 
-REM KoboldCpp
-if exist "kobold\koboldcpp.exe" (
-    set "KCPP_STATUS=Обновить"
-    set "KCPP_COLOR=%ESC%[1;32m"
-    set "KCPP_INSTALLED=1"
+REM Llama.cpp
+if exist "data\llama\llama-server.exe" (
+    set "LLAMA_STATUS=Обновить"
+    set "LLAMA_COLOR=%ESC%[1;32m"
+    set "LLAMA_INSTALLED=1"
 ) else (
-    set "KCPP_STATUS=Установить"
-    set "KCPP_COLOR=%ESC%[1;33m"
-    set "KCPP_INSTALLED=0"
+    set "LLAMA_STATUS=Установить"
+    set "LLAMA_COLOR=%ESC%[1;33m"
+    set "LLAMA_INSTALLED=0"
 )
 
 REM Silero TTS
@@ -77,7 +77,7 @@ if exist "marian\marian_server.py" (
 )
 
 REM Подсчитываем количество установленных компонентов
-set /a "INSTALLED_COUNT=!PY_INSTALLED!+!ST_INSTALLED!+!KCPP_INSTALLED!+!SILERO_INSTALLED!+!MARIAN_INSTALLED!"
+set /a "INSTALLED_COUNT=!PY_INSTALLED!+!ST_INSTALLED!+!LLAMA_INSTALLED!+!SILERO_INSTALLED!+!MARIAN_INSTALLED!"
 
 REM ============================================================================
 REM   Вывод меню в зависимости от статуса установки
@@ -103,7 +103,7 @@ if !INSTALLED_COUNT!==0 (
     echo.
     if !PY_INSTALLED!==1 echo     %ESC%[1;32m✔%ESC%[0m Python 3.11.9
     if !ST_INSTALLED!==1 echo     %ESC%[1;32m✔%ESC%[0m SillyTavern
-    if !KCPP_INSTALLED!==1 echo     %ESC%[1;32m✔%ESC%[0m KoboldCpp
+    if !LLAMA_INSTALLED!==1 echo     %ESC%[1;32m✔%ESC%[0m Llama.cpp
     if !SILERO_INSTALLED!==1 echo     %ESC%[1;32m✔%ESC%[0m Silero TTS v2
     if !MARIAN_INSTALLED!==1 echo     %ESC%[1;32m✔%ESC%[0m Marian NMT
     echo.
@@ -111,7 +111,7 @@ if !INSTALLED_COUNT!==0 (
     echo.
     echo   %ESC%[1;37m[1]%ESC%[0m !PY_COLOR!!PY_STATUS! Python 3.11.9%ESC%[0m
     echo   %ESC%[1;37m[2]%ESC%[0m !ST_COLOR!!ST_STATUS! SillyTavern%ESC%[0m
-    echo   %ESC%[1;37m[3]%ESC%[0m !KCPP_COLOR!!KCPP_STATUS! KoboldCpp%ESC%[0m
+    echo   %ESC%[1;37m[3]%ESC%[0m !LLAMA_COLOR!!LLAMA_STATUS! Llama.cpp%ESC%[0m
     echo   %ESC%[1;37m[4]%ESC%[0m !SILERO_COLOR!!SILERO_STATUS! Silero TTS v2%ESC%[0m
     echo   %ESC%[1;37m[5]%ESC%[0m !MARIAN_COLOR!!MARIAN_STATUS! Marian NMT%ESC%[0m
     echo.
@@ -126,7 +126,7 @@ if !INSTALLED_COUNT!==0 (
     if "!choice!"=="" goto menu
     if "!choice!"=="1" goto install_python
     if "!choice!"=="2" goto install_silly
-    if "!choice!"=="3" goto install_kobold
+    if "!choice!"=="3" goto install_llama
     if "!choice!"=="4" goto install_silero
     if "!choice!"=="5" goto install_marian
     if "!choice!"=="8" goto install_all
@@ -166,12 +166,12 @@ echo.
 call "%~dp0InstallOrUpdate-SillyTavern.bat" 0
 goto menu
 
-:install_kobold
+:install_llama
 cls
 echo.
-echo   %ESC%[1;33m→%ESC%[0m %ESC%[1mЗапуск !KCPP_STATUS! KoboldCpp...%ESC%[0m
+echo   %ESC%[1;33m→%ESC%[0m %ESC%[1mЗапуск !LLAMA_STATUS! Llama.cpp...%ESC%[0m
 echo.
-call "%~dp0InstallOrUpdate-Kobold.bat" 0
+call "%~dp0InstallOrUpdate-Llama.bat" 0
 goto menu
 
 :install_silero

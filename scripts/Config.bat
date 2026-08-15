@@ -23,8 +23,6 @@ if not defined TTS_PORT set TTS_PORT=8881
 if not defined TRANSLATE_PORT set TRANSLATE_PORT=5003
 if not defined MODEL set MODEL=
 if not defined MMPROJ set MMPROJ=
-if not defined ENABLE_WHISPER set ENABLE_WHISPER=0
-if not defined WHISPER_MODEL set WHISPER_MODEL=
 
 for /f %%a in ('powershell -Command "Write-Host ([char]27) -NoNewline"') do set "ESC=%%a"
 
@@ -33,25 +31,13 @@ REM   Нормализация корневого пути
 REM ============================================================================
 for %%F in ("%~dp0..") do set "ROOT_DIR=%%~fF"
 
-REM Проверка Whisper (после определения ROOT_DIR!)
-set "WHISPER_STATUS=%ESC%[1;31mВыключен%ESC%[0m"
-set "WHISPER_INSTALLED=0"
-if exist "!ROOT_DIR!\kobold\models\whisper\!WHISPER_MODEL!" (
-    set "WHISPER_INSTALLED=1"
-    if "!ENABLE_WHISPER!"=="1" (
-        set "WHISPER_STATUS=%ESC%[1;32mВключён%ESC%[0m"
-    ) else (
-        set "WHISPER_STATUS=%ESC%[1;31mВыключен%ESC%[0m"
-    )
-)
-
 REM ============================================================================
 REM   Проверка наличия установленных компонентов
 REM ============================================================================
 set "ANY_INSTALLED=0"
 if exist "python-3.11.9\python.exe" set ANY_INSTALLED=1
 if exist "SillyTavern\package.json" set ANY_INSTALLED=1
-if exist "kobold\koboldcpp.exe" set ANY_INSTALLED=1
+if exist "data\llama\llama-server.exe" set ANY_INSTALLED=1
 if exist "tts-cpu\silero_server_v2.py" set ANY_INSTALLED=1
 if exist "marian\marian_server.py" set ANY_INSTALLED=1
 
@@ -88,10 +74,9 @@ if "!ENABLE_LLM!"=="1" ( set "LLM_STATUS=%ESC%[1;32mВключён%ESC%[0m" ) el
 if "!ENABLE_TTS!"=="1" ( set "TTS_STATUS=%ESC%[1;32mВключён%ESC%[0m" ) else ( set "TTS_STATUS=%ESC%[1;31mВыключен%ESC%[0m" )
 if "!ENABLE_TRANSLATE!"=="1" ( set "TR_STATUS=%ESC%[1;32mВключён%ESC%[0m" ) else ( set "TR_STATUS=%ESC%[1;31mВыключен%ESC%[0m" )
 
-echo     %ESC%[1;37m[1]%ESC%[0m LLM (KoboldCpp)            — !LLM_STATUS!
+echo     %ESC%[1;37m[1]%ESC%[0m LLM (llama.cpp)            — !LLM_STATUS!
 echo     %ESC%[1;37m[2]%ESC%[0m TTS (Silero v2)            — !TTS_STATUS!
 echo     %ESC%[1;37m[3]%ESC%[0m Переводчик (Marian NMT)    — !TR_STATUS!
-echo     %ESC%[1;37m[4]%ESC%[0m Whisper (распознавание)    — !WHISPER_STATUS!
 echo.
 echo   %ESC%[1;33mМодель LLM:%ESC%[0m
 if not "!MODEL!"=="" (
@@ -104,17 +89,17 @@ if not "!MODEL!"=="" (
 )
 echo.
 echo   %ESC%[1;33mПорты:%ESC%[0m
-echo     %ESC%[1;37m[5]%ESC%[0m Порт SillyTavern              = !ST_PORT!
-echo     %ESC%[1;37m[6]%ESC%[0m Порт LLM (KoboldCpp)          = !LLM_PORT!
-echo     %ESC%[1;37m[7]%ESC%[0m Порт TTS (Silero v2)          = !TTS_PORT!
-echo     %ESC%[1;37m[8]%ESC%[0m Порт переводчика (Marian NMT) = !TRANSLATE_PORT!
+echo     %ESC%[1;37m[4]%ESC%[0m Порт SillyTavern              = !ST_PORT!
+echo     %ESC%[1;37m[5]%ESC%[0m Порт LLM (llama.cpp)          = !LLM_PORT!
+echo     %ESC%[1;37m[6]%ESC%[0m Порт TTS (Silero v2)          = !TTS_PORT!
+echo     %ESC%[1;37m[7]%ESC%[0m Порт переводчика (Marian NMT) = !TRANSLATE_PORT!
 echo.
-echo   %ESC%[1;37m[9]%ESC%[0m %ESC%[1;33mВыбрать модель LLM%ESC%[0m
+echo   %ESC%[1;37m[8]%ESC%[0m %ESC%[1;33mВыбрать модель LLM%ESC%[0m
 echo   %ESC%[1;37m[0]%ESC%[0m %ESC%[1mНазад в главное меню%ESC%[0m
 echo   %ESC%[1;37m[R]%ESC%[0m %ESC%[1;33mСбросить настройки по умолчанию%ESC%[0m
 echo.
 set "choice="
-set /p "choice=%ESC%[33mВыберите действие (0-9, R): %ESC%[0m"
+set /p "choice=%ESC%[33mВыберите действие (0-8, R): %ESC%[0m"
 
 set "choice=%choice: =%"
 
@@ -122,12 +107,11 @@ if "%choice%"=="" goto menu
 if "%choice%"=="1" goto toggle_llm
 if "%choice%"=="2" goto toggle_tts
 if "%choice%"=="3" goto toggle_translate
-if "%choice%"=="4" goto toggle_whisper
-if "%choice%"=="5" goto set_st_port
-if "%choice%"=="6" goto set_llm_port
-if "%choice%"=="7" goto set_tts_port
-if "%choice%"=="8" goto set_translate_port
-if "%choice%"=="9" goto select_model
+if "%choice%"=="4" goto set_st_port
+if "%choice%"=="5" goto set_llm_port
+if "%choice%"=="6" goto set_tts_port
+if "%choice%"=="7" goto set_translate_port
+if "%choice%"=="8" goto select_model
 if /i "%choice%"=="R" goto reset_defaults
 if "%choice%"=="0" goto exit
 goto menu
@@ -165,23 +149,6 @@ if "!ENABLE_TRANSLATE!"=="1" (
 timeout /t 1 /nobreak >nul
 goto save_settings
 
-:toggle_whisper
-if "!WHISPER_INSTALLED!"=="0" (
-    echo   %ESC%[1;33m  ⚠   Whisper модель не установлена.%ESC%[0m
-    echo   %ESC%[33m       Установите KoboldCpp для автозагрузки.%ESC%[0m
-    timeout /t 2 /nobreak >nul
-    goto save_settings
-)
-if "!ENABLE_WHISPER!"=="1" (
-    set ENABLE_WHISPER=0
-    echo   %ESC%[1;33m  →   Whisper ВЫКЛЮЧЕН%ESC%[0m
-) else (
-    set ENABLE_WHISPER=1
-    echo   %ESC%[1;32m  ✔   Whisper ВКЛЮЧЁН%ESC%[0m
-)
-timeout /t 1 /nobreak >nul
-goto save_settings
-
 :set_st_port
 echo.
 set /p "ST_PORT=%ESC%[33mНовый порт для SillyTavern (по умолчанию 8000): %ESC%[0m"
@@ -192,7 +159,7 @@ goto save_settings
 
 :set_llm_port
 echo.
-set /p "LLM_PORT=%ESC%[33mНовый порт для KoboldCpp (по умолчанию 5001): %ESC%[0m"
+set /p "LLM_PORT=%ESC%[33mНовый порт для LLM (llama.cpp, по умолчанию 5001): %ESC%[0m"
 if "%LLM_PORT%"=="" set LLM_PORT=5001
 echo   %ESC%[32m  ✔   Порт LLM изменён на !LLM_PORT!%ESC%[0m
 timeout /t 1 /nobreak >nul
@@ -215,12 +182,12 @@ timeout /t 1 /nobreak >nul
 goto save_settings
 
 :select_model
-REM Проверяем, установлен ли KoboldCpp
-if not exist "kobold\koboldcpp.exe" (
+REM Проверяем, установлен ли llama.cpp
+if not exist "data\llama\llama-server.exe" (
     echo.
-    echo   %ESC%[1;31m^[ОШИБКА^] KoboldCpp не установлен!%ESC%[0m
-    echo   %ESC%[33m      Выбор модели невозможен без установленного KoboldCpp.%ESC%[0m
-    echo   %ESC%[33m      Сначала установите KoboldCpp через меню установки компонентов.%ESC%[0m
+    echo   %ESC%[1;31m^[ОШИБКА^] Llama.cpp не установлен!%ESC%[0m
+    echo   %ESC%[33m      Выбор модели невозможен без установленного llama.cpp.%ESC%[0m
+    echo   %ESC%[33m      Сначала установите llama.cpp через меню установки компонентов.%ESC%[0m
     echo.
     pause
     goto menu
@@ -232,61 +199,33 @@ echo   %ESC%[1;36m━━━━━━━━━━━━━━━━━━━━�
 echo   %ESC%[1;36m                         Выбор LLM модели                         %ESC%[0m
 echo   %ESC%[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%ESC%[0m
 echo.
-echo     %ESC%[1;37m[1]%ESC%[0m %ESC%[1;32mGemma 4 E4B Heretic%ESC%[0m    %ESC%[2m^(5.2 ГБ, Q4_K_M, текстовая^)%ESC%[0m
-echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4 E4B Heretic%ESC%[0m    %ESC%[2m^(8.1 ГБ, Q8_0, текстовая^)%ESC%[0m
-echo     %ESC%[1;37m[3]%ESC%[0m %ESC%[1;35mGemma 4 E4B Heretic%ESC%[0m    %ESC%[2m^(15.1 ГБ, BF16, текстовая^)%ESC%[0m
-echo     %ESC%[1;37m[4]%ESC%[0m %ESC%[1;35mVistral 24B Instruct%ESC%[0m   %ESC%[2m^(19 ГБ, Q6_K, текстовая^)%ESC%[0m
-echo     %ESC%[1;37m[5]%ESC%[0m %ESC%[1;33mQwen 3.6-27B%ESC%[0m           %ESC%[2m^(13.6 ГБ, Q3_K_M, мультимодальная^)%ESC%[0m
-echo     %ESC%[1;37m[6]%ESC%[0m %ESC%[1;35mQwen 3.6-27B%ESC%[0m           %ESC%[2m^(19.5 ГБ, Q5_K_M, мультимодальная^)%ESC%[0m
-echo     %ESC%[1;37m[7]%ESC%[0m %ESC%[1;37mОчистить выбор модели%ESC%[0m
+echo     %ESC%[1;37m[1]%ESC%[0m %ESC%[1;35mQwen 3.6-35B-A3B UD-IQ4_NL%ESC%[0m %ESC%[2m^(18.0 ГБ, мин. 24 GB VRAM, мультимодальная^)%ESC%[0m
+echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4-26B-A4B UD-Q4_K_XL%ESC%[0m %ESC%[2m^(17.0 ГБ, мин. 20 GB VRAM, мультимодальная^)%ESC%[0m
+echo     %ESC%[1;37m[3]%ESC%[0m %ESC%[1;37mОчистить выбор модели%ESC%[0m
 echo.
 echo     %ESC%[1;37m[0]%ESC%[0m %ESC%[1mНазад%ESC%[0m
 echo.
 set "model_choice="
-set /p "model_choice=%ESC%[33mВыберите модель (0-7): %ESC%[0m"
+set /p "model_choice=%ESC%[33mВыберите модель (0-3): %ESC%[0m"
 
 set "model_choice=%model_choice: =%"
 
 if "%model_choice%"=="" goto select_model
 if "%model_choice%"=="1" (
-    set "MODEL=gemma-4-E4B-it-heretic-Q4_K_M.gguf"
-    set "MMPROJ="
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Gemma 4 E4B Heretic ^(Q4_K_M^)%ESC%[0m
+    set "MODEL=Qwen3.6-35B-A3B-UD-IQ4_NL.gguf"
+    set "MMPROJ=mmproj-F16.gguf"
+    echo   %ESC%[1;32m  ✔   Выбрана модель: Qwen 3.6-35B-A3B ^(UD-IQ4_NL^)%ESC%[0m
+    echo   %ESC%[2m      Проектор: mmproj-F16.gguf ^(будет загружен автоматически^)%ESC%[0m
     goto save_settings
 )
 if "%model_choice%"=="2" (
-    set "MODEL=gemma-4-E4B-it-heretic-Q8_0.gguf"
-    set "MMPROJ="
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Gemma 4 E4B Heretic ^(Q8_0^)%ESC%[0m
+    set "MODEL=gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf"
+    set "MMPROJ=mmproj-BF16.gguf"
+    echo   %ESC%[1;32m  ✔   Выбрана модель: Gemma 4-26B-A4B ^(UD-Q4_K_XL^)%ESC%[0m
+    echo   %ESC%[2m      Проектор: mmproj-BF16.gguf ^(будет загружен автоматически^)%ESC%[0m
     goto save_settings
 )
 if "%model_choice%"=="3" (
-    set "MODEL=gemma-4-E4B-it-heretic-BF16.gguf"
-    set "MMPROJ="
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Gemma 4 E4B Heretic ^(BF16^)%ESC%[0m
-    goto save_settings
-)
-if "%model_choice%"=="4" (
-    set "MODEL=Vistral-24B-Instruct.i1-Q6_K.gguf"
-    set "MMPROJ="
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Vistral 24B Instruct%ESC%[0m
-    goto save_settings
-)
-if "%model_choice%"=="5" (
-    set "MODEL=Qwen3.6-27B-Q3_K_M.gguf"
-    set "MMPROJ=mmproj-F16.gguf"
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Qwen 3.6-27B ^(Q3_K_M^)%ESC%[0m
-    echo   %ESC%[2m      Проектор: mmproj-F16.gguf ^(будет загружен автоматически^)%ESC%[0m
-    goto save_settings
-)
-if "%model_choice%"=="6" (
-    set "MODEL=Qwen3.6-27B-Q5_K_M.gguf"
-    set "MMPROJ=mmproj-F16.gguf"
-    echo   %ESC%[1;32m  ✔   Выбрана модель: Qwen 3.6-27B ^(Q5_K_M^)%ESC%[0m
-    echo   %ESC%[2m      Проектор: mmproj-F16.gguf ^(будет загружен автоматически^)%ESC%[0m
-    goto save_settings
-)
-if "%model_choice%"=="7" (
     set "MODEL="
     set "MMPROJ="
     echo   %ESC%[1;33m  →   Выбор модели очищен%ESC%[0m
@@ -304,8 +243,6 @@ set TTS_PORT=8881
 set TRANSLATE_PORT=5003
 set MODEL=
 set MMPROJ=
-set ENABLE_WHISPER=0
-set WHISPER_MODEL=
 echo.
 echo   %ESC%[1;32m  ✔   Настройки сброшены до значений по умолчанию%ESC%[0m
 echo   %ESC%[2m      LLM = Включён, TTS = Включён, Переводчик = Включён%ESC%[0m
@@ -324,19 +261,10 @@ timeout /t 2 /nobreak >nul
     echo TRANSLATE_PORT=!TRANSLATE_PORT!
     echo MODEL=!MODEL!
     echo MMPROJ=!MMPROJ!
-    echo ENABLE_WHISPER=!ENABLE_WHISPER!
-    echo WHISPER_MODEL=!WHISPER_MODEL!
 ) > "%CONFIG_FILE%"
 goto menu
 
 :exit
-REM === Автосохранение при выходе с коррекцией Whisper ===
-if "!WHISPER_MODEL!"=="" set ENABLE_WHISPER=0
-if not exist "!ROOT_DIR!\kobold\models\whisper\!WHISPER_MODEL!" (
-    set ENABLE_WHISPER=0
-    set WHISPER_MODEL=
-)
-
 (
     echo ENABLE_LLM=!ENABLE_LLM!
     echo ENABLE_TTS=!ENABLE_TTS!
@@ -347,8 +275,6 @@ if not exist "!ROOT_DIR!\kobold\models\whisper\!WHISPER_MODEL!" (
     echo TRANSLATE_PORT=!TRANSLATE_PORT!
     echo MODEL=!MODEL!
     echo MMPROJ=!MMPROJ!
-    echo ENABLE_WHISPER=!ENABLE_WHISPER!
-    echo WHISPER_MODEL=!WHISPER_MODEL!
 ) > "%CONFIG_FILE%"
 
 popd

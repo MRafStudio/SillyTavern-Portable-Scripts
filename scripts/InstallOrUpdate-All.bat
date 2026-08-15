@@ -49,11 +49,11 @@ if errorlevel 1 (
 )
 
 echo.
-echo   %ESC%[1;33m→%ESC%[0m %ESC%[1mУстановка / Обновление KoboldCpp...%ESC%[0m
+echo   %ESC%[1;33m→%ESC%[0m %ESC%[1mУстановка / Обновление Llama.cpp...%ESC%[0m
 echo.
-call "%~dp0InstallOrUpdate-Kobold.bat" 1
+call "%~dp0InstallOrUpdate-Llama.bat" 1
 if errorlevel 1 (
-    echo   %ESC%[1;31m[ОШИБКА] Kobold не установился. Остановка.%ESC%[0m
+    echo   %ESC%[1;31m[ОШИБКА] Llama.cpp не установился. Остановка.%ESC%[0m
     pause
     popd
     exit /b 1
@@ -89,14 +89,14 @@ echo.
 echo   %ESC%[1;33mУстановленные компоненты:%ESC%[0m
 echo     %ESC%[2m- Python 3.11.9 ^(общий^)%ESC%[0m
 echo     %ESC%[2m- SillyTavern%ESC%[0m
-echo     %ESC%[2m- KoboldCpp%ESC%[0m
+echo     %ESC%[2m- Llama.cpp%ESC%[0m
 echo     %ESC%[2m- Silero TTS v2%ESC%[0m
 REM echo     %ESC%[2m- Silero TTS%ESC%[0m
 echo     %ESC%[2m- Marian NMT%ESC%[0m
 echo.
 
 if "%FIRSTSTART%"=="1" (
-	echo   %ESC%[1;33mТеперь необходимо выбрать LLM модель для работы KoboldCpp.%ESC%[0m
+	echo   %ESC%[1;33mТеперь необходимо выбрать LLM модель для работы llama.cpp.%ESC%[0m
 	pause
 	
 	call "%~dp0Download-Model.bat" 1

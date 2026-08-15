@@ -7,38 +7,38 @@ set "AUTOCLOSE=0"
 if "%1"=="1" set "AUTOCLOSE=1"
 
 REM ============================================================================
-REM   KoboldCpp Portable — менеджер загрузки LLM моделей
+REM   SillyTavern Portable — менеджер загрузки LLM моделей
 REM ============================================================================
 
-title KoboldCpp Portable — Загрузка моделей
+title SillyTavern Portable — Загрузка моделей
 pushd %~dp0..
 
 for /f %%a in ('powershell -Command "Write-Host ([char]27) -NoNewline"') do set "ESC=%%a"
 
 set "PYTHON_DIR=%~dp0..\python-3.11.9"
-set "KCPP_DIR=%~dp0..\kobold"
-set "KCPP_EXE=%KCPP_DIR%\koboldcpp.exe"
-set "MODELS_DIR=%KCPP_DIR%\models"
+set "LLAMA_DIR=%~dp0..\data\llama"
+set "LLAMA_EXE=%LLAMA_DIR%\llama-server.exe"
+set "MODELS_DIR=%~dp0..\data\llm\models"
 if not exist "%MODELS_DIR%" mkdir "%MODELS_DIR%"
 
 REM Добавляем Scripts в PATH для доступа к hf.exe
 set "PATH=%PYTHON_DIR%;%PYTHON_DIR%\Scripts;%PATH%"
 
 REM ============================================================================
-REM   Проверка наличия KoboldCpp
+REM   Проверка наличия llama.cpp
 REM ============================================================================
-if not exist "%KCPP_EXE%" (
+if not exist "%LLAMA_EXE%" (
     cls
     echo.
     echo  %ESC%[1;31m################################################################################%ESC%[0m
     echo  %ESC%[1;31m##                                                                            ##%ESC%[0m
-    echo  %ESC%[1;31m##%ESC%[0m                %ESC%[1;37mKoboldCpp Portable%ESC%[0m   —   %ESC%[1;33mЗагрузка LLM моделей%ESC%[0m               %ESC%[1;31m##%ESC%[0m
+    echo  %ESC%[1;31m##%ESC%[0m                %ESC%[1;37mSillyTavern Portable%ESC%[0m   —   %ESC%[1;33mЗагрузка LLM моделей%ESC%[0m               %ESC%[1;31m##%ESC%[0m
     echo  %ESC%[1;31m##                                                                            ##%ESC%[0m
     echo  %ESC%[1;31m################################################################################%ESC%[0m
     echo.
-    echo   %ESC%[1;31m  ✗   KoboldCpp не установлен!%ESC%[0m
-    echo   %ESC%[33m      Загрузка моделей невозможна без установленного KoboldCpp.%ESC%[0m
-    echo   %ESC%[33m      Сначала установите KoboldCpp через меню установки компонентов.%ESC%[0m
+    echo   %ESC%[1;31m  ✗   Llama.cpp не установлен!%ESC%[0m
+    echo   %ESC%[33m      Загрузка моделей невозможна без установленного llama.cpp.%ESC%[0m
+    echo   %ESC%[33m      Сначала установите llama.cpp через меню установки компонентов.%ESC%[0m
     echo.
     echo   %ESC%[2m      Возврат в главное меню через 5 секунд...%ESC%[0m
     timeout /t 3 /nobreak >nul
@@ -51,7 +51,7 @@ cls
 echo.
 echo  %ESC%[1;36m################################################################################%ESC%[0m
 echo  %ESC%[1;36m##                                                                            ##%ESC%[0m
-echo  %ESC%[1;36m##%ESC%[0m               %ESC%[1;37mKoboldCpp Portable%ESC%[0m   —   %ESC%[1;33mЗагрузка LLM моделей%ESC%[0m                %ESC%[1;36m##%ESC%[0m
+echo  %ESC%[1;36m##%ESC%[0m               %ESC%[1;37mSillyTavern Portable%ESC%[0m   —   %ESC%[1;33mЗагрузка LLM моделей%ESC%[0m                %ESC%[1;36m##%ESC%[0m
 echo  %ESC%[1;36m##                                                                            ##%ESC%[0m
 echo  %ESC%[1;36m################################################################################%ESC%[0m
 echo.
@@ -59,12 +59,8 @@ echo   %ESC%[1;33mМодели будут сохранены в: %MODELS_DIR%%ES
 echo.
 echo   %ESC%[1;33mДоступные модели:%ESC%[0m
 echo.
-echo     %ESC%[1;37m[1]%ESC%[0m %ESC%[1;32mGemma 4 E4B Heretic%ESC%[0m    %ESC%[2m(5.2 ГБ, Q4_K_M, лёгкая, текстовая)%ESC%[0m
-echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4 E4B Heretic%ESC%[0m    %ESC%[2m(8.1 ГБ, Q8_0, средняя, текстовая)%ESC%[0m
-echo     %ESC%[1;37m[3]%ESC%[0m %ESC%[1;35mGemma 4 E4B Heretic%ESC%[0m    %ESC%[2m(15.1 ГБ, BF16, тяжёлая, текстовая)%ESC%[0m
-echo     %ESC%[1;37m[4]%ESC%[0m %ESC%[1;35mVistral 24B Instruct%ESC%[0m   %ESC%[2m(19 ГБ, Q6_K, тяжёлая, текстовая)%ESC%[0m
-echo     %ESC%[1;37m[5]%ESC%[0m %ESC%[1;33mQwen 3.6-27B%ESC%[0m           %ESC%[2m(13.6 ГБ, Q3_K_M, средняя, мультимодальная)%ESC%[0m
-echo     %ESC%[1;37m[6]%ESC%[0m %ESC%[1;35mQwen 3.6-27B%ESC%[0m           %ESC%[2m(19.5 ГБ, Q5_K_M, тяжёлая, мультимодальная)%ESC%[0m
+echo     %ESC%[1;37m[1]%ESC%[0m %ESC%[1;35mQwen 3.6-35B-A3B UD-IQ4_NL%ESC%[0m %ESC%[2m(18.0 ГБ, мин. 24 GB VRAM, мультимодальная)%ESC%[0m
+echo     %ESC%[1;37m[2]%ESC%[0m %ESC%[1;33mGemma 4-26B-A4B UD-Q4_K_XL%ESC%[0m %ESC%[2m(17.0 ГБ, мин. 20 GB VRAM, мультимодальная)%ESC%[0m
 echo.
 echo     %ESC%[1;37m[8]%ESC%[0m %ESC%[1;37mВвести ID модели и имя файла вручную%ESC%[0m
 echo.
@@ -81,12 +77,8 @@ set "MODEL_SIZE="
 set "PROJECTOR="
 
 if "!choice!"=="" goto menu
-if "!choice!"=="1" set "MODEL_ID=igorls/gemma-4-E4B-it-heretic-GGUF" & set "FILENAME=gemma-4-E4B-it-heretic-Q4_K_M.gguf" & set "MODEL_SIZE=5.2 ГБ" & goto do_download
-if "!choice!"=="2" set "MODEL_ID=igorls/gemma-4-E4B-it-heretic-GGUF" & set "FILENAME=gemma-4-E4B-it-heretic-Q8_0.gguf" & set "MODEL_SIZE=8.1 ГБ" & goto do_download
-if "!choice!"=="3" set "MODEL_ID=igorls/gemma-4-E4B-it-heretic-GGUF" & set "FILENAME=gemma-4-E4B-it-heretic-BF16.gguf" & set "MODEL_SIZE=15.1 ГБ" & goto do_download
-if "!choice!"=="4" set "MODEL_ID=mradermacher/Vistral-24B-Instruct-i1-GGUF" & set "FILENAME=Vistral-24B-Instruct.i1-Q6_K.gguf" & set "MODEL_SIZE=19 ГБ" & goto do_download
-if "!choice!"=="5" set "MODEL_ID=unsloth/Qwen3.6-27B-GGUF" & set "FILENAME=Qwen3.6-27B-Q3_K_M.gguf" & set "MODEL_SIZE=13.6 ГБ" & set "PROJECTOR=mmproj-F16.gguf" & goto do_download_qwen
-if "!choice!"=="6" set "MODEL_ID=unsloth/Qwen3.6-27B-GGUF" & set "FILENAME=Qwen3.6-27B-Q5_K_M.gguf" & set "MODEL_SIZE=19.5 ГБ" & set "PROJECTOR=mmproj-F16.gguf" & goto do_download_qwen
+if "!choice!"=="1" set "MODEL_ID=unsloth/Qwen3.6-35B-A3B-GGUF" & set "FILENAME=Qwen3.6-35B-A3B-UD-IQ4_NL.gguf" & set "MODEL_SIZE=18.0 ГБ" & set "PROJECTOR=mmproj-F16.gguf" & goto do_download_qwen
+if "!choice!"=="2" set "MODEL_ID=unsloth/gemma-4-26B-A4B-it-GGUF" & set "FILENAME=gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf" & set "MODEL_SIZE=17.0 ГБ" & set "PROJECTOR=mmproj-BF16.gguf" & goto do_download_qwen
 if "!choice!"=="8" goto manual_download
 if "!choice!"=="9" goto list_models
 if "!choice!"=="0" goto exit
@@ -122,7 +114,6 @@ if !errorlevel! neq 0 (
 )
 echo.
 echo   %ESC%[1;33m→%ESC%[0m %ESC%[1mЗагрузка проектора !PROJECTOR!%ESC%[0m
-echo   %ESC%[2m   Размер: 0.93 ГБ%ESC%[0m
 echo   %ESC%[2m   Необходим для работы мультимодальной модели.%ESC%[0m
 echo.
 hf download "!MODEL_ID!" "!PROJECTOR!" --local-dir "%MODELS_DIR%"
@@ -204,7 +195,7 @@ goto menu
 cls
 echo.
 echo   %ESC%[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%ESC%[0m
-echo   %ESC%[1;36m                 Загруженные модели в папке kobold\models\                     %ESC%[0m
+echo   %ESC%[1;36m                 Загруженные модели в папке data\llm\models\                 %ESC%[0m
 echo   %ESC%[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%ESC%[0m
 echo.
 set "COUNT=0"
@@ -242,8 +233,6 @@ if not defined TTS_PORT set TTS_PORT=8881
 if not defined TRANSLATE_PORT set TRANSLATE_PORT=5003
 if not defined MODEL set MODEL=
 if not defined MMPROJ set MMPROJ=
-if not defined ENABLE_WHISPER set ENABLE_WHISPER=0
-if not defined WHISPER_MODEL set WHISPER_MODEL=
 
 (
     echo ENABLE_LLM=!ENABLE_LLM!
@@ -255,8 +244,6 @@ if not defined WHISPER_MODEL set WHISPER_MODEL=
     echo TRANSLATE_PORT=!TRANSLATE_PORT!
     echo MODEL=!MODEL!
     echo MMPROJ=!MMPROJ!
-    echo ENABLE_WHISPER=!ENABLE_WHISPER!
-    echo WHISPER_MODEL=!WHISPER_MODEL!
 ) > "%CONFIG_FILE%"
 
 REM === Вывод сообщения в зависимости от того, что сохранено ===

@@ -4,7 +4,6 @@
 
 # --- Компоненты (устанавливаются скриптами) ---
 SillyTavern/
-kobold/
 python-*/
 node-dist/
 npm_cache/
@@ -37,6 +36,7 @@ config.yaml
 *.dll
 *.zip
 *.7z
+!scripts/bin/nssm.exe
 
 # --- Python ---
 __pycache__/

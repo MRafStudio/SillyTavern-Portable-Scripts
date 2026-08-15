@@ -43,11 +43,18 @@ if exist "SillyTavern\package.json" (
     echo     %ESC%[1;31m✗  %ESC%[0m SillyTavern — не установлен
 )
 
-REM Проверка KoboldCpp
-if exist "kobold\koboldcpp.exe" (
-    echo     %ESC%[1;32m✔  %ESC%[0m KoboldCpp
+REM Проверка Llama.cpp
+if exist "data\llama\llama-server.exe" (
+    set "LLAMA_INSTALLED=1"
+    sc query "LlamaCPP-ST" >nul 2>&1
+    if not errorlevel 1 (
+        echo     %ESC%[1;32m✔  %ESC%[0m Llama.cpp %ESC%[2m^(служба LlamaCPP-ST^)%ESC%[0m
+    ) else (
+        echo     %ESC%[1;32m✔  %ESC%[0m Llama.cpp %ESC%[2m^(служба не установлена — [4]^)%ESC%[0m
+    )
 ) else (
-    echo     %ESC%[1;31m✗  %ESC%[0m KoboldCpp — не установлен
+    set "LLAMA_INSTALLED=0"
+    echo     %ESC%[1;31m✗  %ESC%[0m Llama.cpp — не установлен
 )
 
 REM Проверка Silero TTS
@@ -68,7 +75,7 @@ echo.
 echo   %ESC%[1;37m[1]%ESC%[0m %ESC%[1mУстановка / Обновление компонентов%ESC%[0m
 echo   %ESC%[1;37m[2]%ESC%[0m %ESC%[1mНастройка компонентов%ESC%[0m
 echo   %ESC%[1;37m[3]%ESC%[0m %ESC%[1mЗагрузка LLM моделей%ESC%[0m
-echo   %ESC%[1;37m[4]%ESC%[0m %ESC%[1mНастройка KoboldCpp%ESC%[0m
+echo   %ESC%[1;37m[4]%ESC%[0m %ESC%[1mСлужба LLM ^(llama.cpp, 24/7^)%ESC%[0m
 echo.
 
 REM Условный цвет для пункта запуска
@@ -94,7 +101,7 @@ if "%choice%"=="*" goto run
 if "%choice%"=="1" goto setup
 if "%choice%"=="2" goto config
 if "%choice%"=="3" goto download_model
-if "%choice%"=="4" goto kobold_settings
+if "%choice%"=="4" goto llama_service
 if "%choice%"=="0" goto exit
 goto menu
 
@@ -128,8 +135,8 @@ goto menu
 call "%~dp0scripts\Download-Model.bat" 0
 goto menu
 
-:kobold_settings
-call "%~dp0scripts\KoboldSettings.bat"
+:llama_service
+call "%~dp0scripts\Llama-Service.bat"
 goto menu
 
 :exit

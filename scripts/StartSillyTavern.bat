@@ -37,11 +37,6 @@ if not defined TTS_PORT set TTS_PORT=8881
 if not defined TRANSLATE_PORT set TRANSLATE_PORT=5003
 if not defined MODEL set MODEL=
 if not defined MMPROJ set MMPROJ=
-if not defined ENABLE_WHISPER set ENABLE_WHISPER=0
-if not defined WHISPER_MODEL set WHISPER_MODEL=
-
-REM === Коррекция Whisper ===
-if "!WHISPER_MODEL!"=="" set ENABLE_WHISPER=0
 
 REM ============================================================================
 REM   Нормализация корневого пути (убираем scripts\.. из путей)
@@ -75,9 +70,9 @@ echo  %ESC%[1;36m###############################################################
 echo.
 echo   %ESC%[1;33mСтатус сервисов:%ESC%[0m
 if "!ENABLE_LLM!"=="1" (
-    echo     %ESC%[1;32m✔ %ESC%[0m LLM ^(KoboldCpp^)            %ESC%[2mhttp://localhost:!LLM_PORT!%ESC%[0m
+    echo     %ESC%[1;32m✔ %ESC%[0m LLM ^(llama.cpp^)          %ESC%[2mhttp://localhost:!LLM_PORT!%ESC%[0m
 ) else (
-    echo     %ESC%[1;31m✗ %ESC%[0m LLM ^(KoboldCpp^)            %ESC%[2mвыключен%ESC%[0m
+    echo     %ESC%[1;31m✗ %ESC%[0m LLM ^(llama.cpp^)          %ESC%[2mвыключен%ESC%[0m
 )
 if "!ENABLE_TTS!"=="1" (
     echo     %ESC%[1;32m✔ %ESC%[0m TTS ^(Silero v2^)            %ESC%[2mhttp://localhost:!TTS_PORT!%ESC%[0m
@@ -96,13 +91,11 @@ echo  %ESC%[36m-----------------------------------------------------------------
 echo.
 
 REM ============================================================================
-REM   1. Запуск KoboldCpp (LLM)
+REM   1. Проверка LLM (llama.cpp, служба LlamaCPP-ST)
 REM ============================================================================
 if "!ENABLE_LLM!"=="1" (
-    echo   %ESC%[1;32m[1/4]%ESC%[0m %ESC%[1mЗапуск KoboldCpp...%ESC%[0m %ESC%[2m^(http://localhost:!LLM_PORT!^)%ESC%[0m
-    set "MODELS_DIR=!ROOT_DIR!\kobold\models"
-    set "KCPP_EXE=!ROOT_DIR!\kobold\koboldcpp.exe"
-    set "KCPP_TEMP=!ROOT_DIR!\kobold\temp"
+    echo   %ESC%[1;32m[1/4]%ESC%[0m %ESC%[1mПроверка LLM ^(llama.cpp^)...%ESC%[0m %ESC%[2m^(http://localhost:!LLM_PORT!^)%ESC%[0m
+    set "MODELS_DIR=!ROOT_DIR!\data\llm\models"
     set "MODEL_PATH=!MODELS_DIR!\!MODEL!"
     
     if not exist "!MODEL_PATH!" (
@@ -115,72 +108,60 @@ if "!ENABLE_LLM!"=="1" (
         exit /b 1
     )
     
-    set "KCPP_SETTINGS=!ROOT_DIR!\kobold\settings\default.kcpps"
-    
-    REM === Проверяем/создаём default.kcpps ===
-    if not exist "!KCPP_SETTINGS!" (
-        set "KCPP_SETTINGS_SRC=!ROOT_DIR!\scripts\data\default.kcpps"
-        if exist "!KCPP_SETTINGS_SRC!" (
-            if not exist "!ROOT_DIR!\kobold\settings" mkdir "!ROOT_DIR!\kobold\settings"
-            copy "!KCPP_SETTINGS_SRC!" "!KCPP_SETTINGS!" >nul
-            echo   %ESC%[33m  →   Создан файл настроек KoboldCpp: settings\default.kcpps%ESC%[0m
-        ) else (
-            echo   %ESC%[1;33m  ⚠   Шаблон default.kcpps не найден. Запуск без файла настроек.%ESC%[0m
-            set "KCPP_SETTINGS="
-        )
+    REM Уже работает?
+    curl -s -o nul --max-time 2 http://localhost:!LLM_PORT!/health >nul 2>&1
+    if not errorlevel 1 (
+        echo   %ESC%[1;32m  ✔   LLM уже работает!%ESC%[0m
+        echo.
+        goto :llm_done
     )
     
-    REM === Формируем аргументы запуска ===
-    set "KCPP_ARGS=--model "!MODEL_PATH!" --port !LLM_PORT! --skiplauncher"
-    
-    if not "!MMPROJ!"=="" (
-        set "MMPROJ_PATH=!MODELS_DIR!\!MMPROJ!"
-        if exist "!MMPROJ_PATH!" (
-            set "KCPP_ARGS=!KCPP_ARGS! --mmproj "!MMPROJ_PATH!""
-        )
-    )
-	
-    REM === Whisper ===
-    if "!ENABLE_WHISPER!"=="1" (
-        if not "!WHISPER_MODEL!"=="" (
-            set "WHISPER_PATH=!ROOT_DIR!\kobold\models\whisper\!WHISPER_MODEL!"
-            if exist "!WHISPER_PATH!" (
-                set "KCPP_ARGS=!KCPP_ARGS! --whispermodel "!WHISPER_PATH!""
-            ) else (
-                echo   %ESC%[1;33m  ⚠   Whisper модель не найдена: !WHISPER_MODEL!%ESC%[0m
-                set ENABLE_WHISPER=0
-            )
-        )
-    )
-    
-    if not "!KCPP_SETTINGS!"=="" (
-        set "KCPP_ARGS=!KCPP_ARGS! --config "!KCPP_SETTINGS!""
-    )
-  
-    REM === ПОРТАТИВНЫЙ TEMP для KoboldCpp (PyInstaller onefile) ===
-    if not exist "!KCPP_TEMP!" mkdir "!KCPP_TEMP!"
-    for /d %%D in ("!KCPP_TEMP!\_MEI*") do rmdir /s /q "%%D" 2>nul
-    
-    start "" /B cmd /c "set TMP=!KCPP_TEMP!&&set TEMP=!KCPP_TEMP!&&"!KCPP_EXE!" !KCPP_ARGS!"
-    
-    REM Ожидание готовности KoboldCpp (max 120 сек)
-    echo   %ESC%[1;33m  →   Ожидание готовности KoboldCpp...%ESC%[0m
-    set /a "attempts=0"
-    :wait_kobold
-    timeout /t 2 /nobreak >nul
-    curl -s http://localhost:!LLM_PORT!/v1/models >nul 2>&1
-    if not errorlevel 1 goto :kobold_ready
-    set /a "attempts+=1"
-    if !attempts! GEQ 60 (
-        echo   %ESC%[1;31m  ✗   KoboldCpp не ответил за 120 секунд.%ESC%[0m
-        echo   %ESC%[33m       Проверьте вывод выше на ошибки.%ESC%[0m
+    REM Служба установлена?
+    sc query "LlamaCPP-ST" >nul 2>&1
+    if errorlevel 1 (
+        echo.
+        echo   %ESC%[1;31m^[ОШИБКА^] Служба LlamaCPP-ST не установлена.%ESC%[0m
+        echo   %ESC%[33m       Установите службу: главное меню [4] «Служба LLM»%ESC%[0m
+        echo.
         pause
         exit /b 1
     )
-    goto :wait_kobold
-    :kobold_ready
-    echo   %ESC%[1;32m  ✔   KoboldCpp готов!%ESC%[0m
+    
+    REM Служба есть — запускаем, если остановлена
+    set "SV_STATE="
+    for /f "tokens=4" %%s in ('sc query "LlamaCPP-ST" ^| findstr "STATE"') do set "SV_STATE=%%s"
+    if /i not "!SV_STATE!"=="RUNNING" (
+        echo   %ESC%[1;33m  →   Запуск службы LlamaCPP-ST...%ESC%[0m
+        net start "LlamaCPP-ST" >nul 2>&1
+        if errorlevel 1 (
+            echo.
+            echo   %ESC%[1;31m^[ОШИБКА^] Не удалось запустить службу LlamaCPP-ST.%ESC%[0m
+            echo   %ESC%[33m       Запустите от имени администратора: services.msc → LlamaCPP-ST%ESC%[0m
+            echo.
+            pause
+            exit /b 1
+        )
+    )
+    
+    REM Ожидание готовности LLM (max 120 сек — модель грузится долго)
+    echo   %ESC%[1;33m  →   Ожидание готовности LLM...%ESC%[0m
+    set /a "llm_attempts=0"
+    :wait_llm
+    timeout /t 2 /nobreak >nul
+    curl -s -o nul --max-time 2 http://localhost:!LLM_PORT!/health >nul 2>&1
+    if not errorlevel 1 goto :llm_ready
+    set /a "llm_attempts+=1"
+    if !llm_attempts! GEQ 60 (
+        echo   %ESC%[1;31m  ✗   LLM не ответил за 120 секунд.%ESC%[0m
+        echo   %ESC%[33m       Проверьте лог службы: data	emp\llama-service.err.log%ESC%[0m
+        pause
+        exit /b 1
+    )
+    goto :wait_llm
+    :llm_ready
+    echo   %ESC%[1;32m  ✔   LLM готов!%ESC%[0m
     echo.
+    :llm_done
 )
 
 REM ============================================================================
