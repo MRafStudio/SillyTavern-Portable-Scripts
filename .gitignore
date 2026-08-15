@@ -1,0 +1,53 @@
+# ============================================================
+#               SillyTavern Portable — .gitignore
+# ============================================================
+
+# --- Компоненты (устанавливаются скриптами) ---
+SillyTavern/
+kobold/
+python-*/
+node-dist/
+npm_cache/
+huggingface_cache/
+marian/
+tts-cpu/
+AppData/
+
+# --- Данные (создаются при запуске) ---
+/data/
+output/
+logs/
+*.log
+
+# --- Пользовательские настройки ---
+scripts/settings.ini
+config.yaml
+
+# --- Генерируемые/загружаемые файлы ---
+*.wav
+*.mp3
+*.safetensors
+*.bin
+*.gguf
+*.ckpt
+*.pth
+
+# --- Windows ---
+*.exe
+*.dll
+*.zip
+*.7z
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# --- IDE ---
+.vs/
+.vscode/
+.idea/
+*.sln
+*.user
